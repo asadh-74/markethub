@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: markethub
+    runtime: docker
+    plan: free
+    healthCheckPath: /shop
+    envVars:
+      - key: APP_NAME
+        value: MarketHub
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_TIMEZONE
+        value: Asia/Karachi
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: MAIL_MAILER
+        value: log
