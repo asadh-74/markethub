@@ -24,6 +24,20 @@ if [ "${DB_CONNECTION:-sqlite}" = "pgsql" ]; then
   fi
 fi
 
+# Aiven's private CA is provided only through a hosting secret. Never save
+# certificates or DB passwords in source control.
+if [ "${DB_CONNECTION:-sqlite}" = "mysql" ]; then
+  if [ -n "${MARKETHUB_MYSQL_CA_PEM:-}" ]; then
+    install -d -m 700 storage/certs
+    (umask 077; printf '%s\n' "${MARKETHUB_MYSQL_CA_PEM}" > storage/certs/aiven-ca.pem)
+    export MYSQL_ATTR_SSL_CA="/var/www/html/storage/certs/aiven-ca.pem"
+  fi
+  if [ "${APP_ENV:-local}" = "production" ] && [ -z "${MYSQL_ATTR_SSL_CA:-}" ]; then
+    echo "ERROR: Production MySQL requires MARKETHUB_MYSQL_CA_PEM (or MYSQL_ATTR_SSL_CA path) for verified TLS." >&2
+    exit 1
+  fi
+fi
+
 php artisan config:clear
 php artisan package:discover --ansi
 # Safe upgrade: never destroy existing users, products or orders.

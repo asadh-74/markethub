@@ -1,6 +1,6 @@
 # MarketHub — Laravel Multi-Vendor Marketplace
 
-**Laravel 12 · Vue 3 · Inertia · MySQL / Supabase PostgreSQL · Docker · Render**
+**Laravel 12 · Vue 3 · Inertia · Aiven MySQL Free · Docker · Render**
 
 MarketHub is a full-stack e-commerce portfolio app with customer, vendor and admin accounts, real relational persistence, REST catalogue API and transactional checkout. The payment provider is **a simulator**, not an actual payment service. Never supply real card numbers or delivery details.
 
@@ -32,41 +32,41 @@ composer run dev
 
 Run backend tests with `php artisan test`; build the frontend with `npm run build`.
 
-## Persistent database — option A: Supabase (recommended for Render)
+## Persistent database — Aiven free MySQL (recommended)
 
-Create a dedicated Supabase project, run the SQL in `database/supabase/001_private_schema.sql` through its SQL Editor, and use **Connect → Session pooler** (port 5432). This app runs through Laravel's server-side PostgreSQL driver, not the Supabase public Data API. The `markethub` schema is deliberately private: **do not add it to the Supabase exposed schemas**. In Render's service **Environment** section, set the variables below using your project's actual values (do not commit passwords):
+For a **$0 portfolio deployment**, use **Aiven for MySQL Free** + **Render Free Web Service**. Aiven hosts real MySQL with 1 GB storage, 1 GB RAM and backups, with no required credit card and no preset trial expiry. Aiven may power down a database after inactivity; the Render web service also spins down when idle. Use these services for a *portfolio/demo*, not a high-availability store.
+
+1. Sign up at https://console.aiven.io and create a project/service: **MySQL → Free** (not a trial/paid size). Name the MySQL service `markethub-db`. Aiven picks the free region.
+2. From the MySQL service's **Connect → Databases** section, create a database called `markethub` (or use the provided `defaultdb`).
+3. From the service **Overview → Connection information**, copy the **Host, Port, Username, Password, Database** and download **CA Certificate** as `ca.pem`. Aiven ports are service-specific; **do not assume 3306**. Keep the password and certificate private.
+4. Open your existing MarketHub **Render web service → Environment**. Add these environment variable names and set their values from Aiven; use the Render dashboard's secret values, not GitHub files.
 
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false
-APP_KEY=base64:YOUR_PERSISTENT_LARAVEL_KEY
-DB_CONNECTION=pgsql
-DB_HOST=YOUR_SUPABASE_SESSION_POOLER_HOST
-DB_PORT=5432
-DB_DATABASE=postgres
-DB_USERNAME=YOUR_SUPABASE_POOLER_USERNAME
-DB_PASSWORD=YOUR_SUPABASE_DATABASE_PASSWORD
-DB_SSLMODE=require
-DB_SEARCH_PATH=markethub
 APP_URL=https://markethub-b3fz.onrender.com
-MARKETHUB_SEED_DEMO=false
-```
-
-Use `php artisan key:generate --show` **once** to create APP_KEY, and retain it through future deploys. Never reveal it or put it in GitHub. Only use the database password and normal PostgreSQL connection: you do **not** need to expose Supabase `service_role` or other API keys.
-
-## Persistent database — option B: managed MySQL
-
-```dotenv
+APP_KEY=base64:YOUR_EXISTING_PERSISTENT_LARAVEL_KEY
 DB_CONNECTION=mysql
-DB_HOST=YOUR_MANAGED_MYSQL_HOST
-DB_PORT=3306
+DB_HOST=YOUR_AIVEN_HOST
+DB_PORT=YOUR_AIVEN_MYSQL_PORT
 DB_DATABASE=markethub
-DB_USERNAME=YOUR_DB_USERNAME
-DB_PASSWORD=YOUR_DB_PASSWORD
+DB_USERNAME=YOUR_AIVEN_MYSQL_USERNAME
+DB_PASSWORD=YOUR_PRIVATE_AIVEN_PASSWORD
+MARKETHUB_MYSQL_CA_PEM="CONTENTS_OF_AIVEN_ca.pem"
 MARKETHUB_SEED_DEMO=false
 ```
 
-Configure TLS on your MySQL provider and use a least-privileged application user. Laravel's existing schema and Eloquent models work with both drivers. Database migrations run at startup. **Switching database providers does not import data from your old SQLite database; back it up and migrate separately if needed.**
+**Certificate**: `MARKETHUB_MYSQL_CA_PEM` must contain the actual multi-line PEM certificate from Aiven, including BEGIN/END CERTIFICATE. The Docker startup script writes it to `storage/certs/aiven-ca.pem` with owner-only permissions, sets Laravel's `MYSQL_ATTR_SSL_CA` to that path, and uses PDO's CA validation. Do not put the certificate, password, or encryption key in GitHub. You may instead configure `MYSQL_ATTR_SSL_CA` with an existing CA file path in the container.
+
+**Important**: Changing `DB_CONNECTION` to MySQL does **not** migrate existing SQLite records. If the old demo has real data, back it up/export it first. The script runs `php artisan migrate --force` on startup and never wipes tables. If the database connection is temporarily unavailable, the deployment should fail rather than silently switch back to SQLite.
+
+**Do not rotate `APP_KEY`** when switching databases if this is an existing Laravel deployment; changing it can invalidate sessions/encrypted data. If APP_KEY is missing for a *brand-new* instance, generate once using `php artisan key:generate --show`, then store that key only on Render.
+
+Aiven guides: [Create free MySQL](https://aiven.io/docs/products/mysql/get-started) · [Connect PHP via PDO and a CA](https://aiven.io/docs/products/mysql/howto/connect-with-php) · [Free tier limits](https://aiven.io/docs/products/mysql/concepts/mysql-free-tier).
+
+### Other database providers
+
+The application also supports ordinary managed MySQL/MariaDB and Supabase PostgreSQL via Laravel, but **MySQL is our intended persistent database**. If you later choose Supabase, the dedicated private-schema SQL is at `database/supabase/001_private_schema.sql` and you must set `DB_SEARCH_PATH=markethub`; this is *not* necessary for Aiven MySQL.
 
 ### Secure initial admin
 

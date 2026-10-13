@@ -17,8 +17,10 @@ services:
         value: Asia/Karachi
       - key: LOG_CHANNEL
         value: stderr
-      # Default is a disposable reviewer demo. For persistent use, change
-      # DB_CONNECTION and set DB_HOST/PORT/DATABASE/USERNAME/PASSWORD securely.
+      # Default is a disposable reviewer demo. For persistence, use Aiven's
+      # $0 MySQL Free database. Set DB_CONNECTION=mysql and its DB_HOST,
+      # DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD, and private
+      # MARKETHUB_MYSQL_CA_PEM in the Render dashboard (not this YAML).
       - key: DB_CONNECTION
         value: sqlite
       - key: MARKETHUB_SEED_DEMO

@@ -15,6 +15,41 @@ jobs:
         run: bash -n docker/start.sh
       - name: Backend tests
         run: php artisan test
+
+  mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: markethub_ci
+          MYSQL_USER: markethub
+          MYSQL_PASSWORD: testing-only-ci-password
+          MYSQL_ROOT_PASSWORD: testing-only-root-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -ptesting-only-root-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.4', extensions: 'mbstring, pdo_mysql, pdo_sqlite' }
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Prepare
+        run: cp .env.example .env && php artisan key:generate
+      - name: Laravel MySQL integration tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: "3306"
+          DB_DATABASE: markethub_ci
+          DB_USERNAME: markethub
+          DB_PASSWORD: testing-only-ci-password
+        run: php artisan test
   frontend:
     runs-on: ubuntu-latest
     steps:
