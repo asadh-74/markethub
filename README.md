@@ -34,7 +34,7 @@ Run backend tests with `php artisan test`; build the frontend with `npm run buil
 
 ## Persistent database — option A: Supabase (recommended for Render)
 
-Create a Supabase project and use **Database → Connect → Session pooler** (typically port 5432). In Render's service **Environment** section, set the variables below using your project's actual values (do not commit passwords):
+Create a dedicated Supabase project, run the SQL in `database/supabase/001_private_schema.sql` through its SQL Editor, and use **Connect → Session pooler** (port 5432). This app runs through Laravel's server-side PostgreSQL driver, not the Supabase public Data API. The `markethub` schema is deliberately private: **do not add it to the Supabase exposed schemas**. In Render's service **Environment** section, set the variables below using your project's actual values (do not commit passwords):
 
 ```dotenv
 APP_ENV=production
@@ -47,6 +47,8 @@ DB_DATABASE=postgres
 DB_USERNAME=YOUR_SUPABASE_POOLER_USERNAME
 DB_PASSWORD=YOUR_SUPABASE_DATABASE_PASSWORD
 DB_SSLMODE=require
+DB_SEARCH_PATH=markethub
+APP_URL=https://markethub-b3fz.onrender.com
 MARKETHUB_SEED_DEMO=false
 ```
 
@@ -90,6 +92,7 @@ Checkout currently uses a fake gateway and synthetic card numbers. The interface
 
 - Never commit `.env`, credentials, API tokens, real customer data or card numbers.
 - Keep `APP_DEBUG=false` and `APP_KEY` stable in production.
+- Run `database/supabase/001_private_schema.sql` before applying Laravel migrations. Do not expose the `markethub` schema in Supabase's Data API settings. Avoid using Supabase anonymous/frontend keys; the app uses only server-side PDO.
 - Confirm the live Render service uses its intended persistent database **before merging/deploying this upgrade**. Back up existing data.
 - Startups do not delete database tables; schema changes are regular migrations.
 - The queue worker runs alongside the web service for portfolio demonstrations; move it to its own worker for higher availability.

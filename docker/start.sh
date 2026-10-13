@@ -14,6 +14,16 @@ if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
   touch database/database.sqlite
 fi
 
+# A PostgreSQL deployment must use a deliberately private schema.
+# Supabase public schema is exposed through the Data API, which is not
+# appropriate for Laravel's users, sessions and order/payment metadata.
+if [ "${DB_CONNECTION:-sqlite}" = "pgsql" ]; then
+  if [ -z "${DB_SEARCH_PATH:-}" ] || [ "${DB_SEARCH_PATH}" = "public" ]; then
+    echo "ERROR: Set DB_SEARCH_PATH to a private PostgreSQL schema (e.g. markethub) first." >&2
+    exit 1
+  fi
+fi
+
 php artisan config:clear
 php artisan package:discover --ansi
 # Safe upgrade: never destroy existing users, products or orders.
