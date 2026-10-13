@@ -25,7 +25,8 @@ const submit = () => form.post('/checkout', { onError: () => form.reset('card_nu
 <template>
     <AppLayout>
         <Head title="Checkout" />
-        <h1 class="mb-4 text-2xl font-semibold">Checkout</h1>
+        <h1 class="mb-4 text-2xl font-semibold">Demo checkout</h1>
+        <p class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><strong>Portfolio demonstration only.</strong> No real payment is processed. Never enter real card details, personal delivery information or payment credentials.</p>
 
         <div v-if="form.errors.checkout" class="mb-4 rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
             {{ form.errors.checkout }}
@@ -79,7 +80,7 @@ const submit = () => form.post('/checkout', { onError: () => form.reset('card_nu
                 </div>
                 <div class="mt-3 flex justify-between border-t pt-3 font-semibold"><span>Total</span><span>{{ money(subtotal_cents) }}</span></div>
                 <button :disabled="form.processing" class="mt-4 w-full rounded bg-indigo-600 py-2 text-white hover:bg-indigo-700 disabled:opacity-50">
-                    {{ form.processing ? 'Processing...' : `Pay ${money(subtotal_cents)}` }}
+                    {{ form.processing ? 'Processing...' : `Place demo order · ${money(subtotal_cents)}` }}
                 </button>
             </aside>
         </form>

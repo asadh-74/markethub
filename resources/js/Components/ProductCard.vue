@@ -10,8 +10,9 @@ const addToCart = () =>
 
 <template>
     <div class="flex flex-col overflow-hidden rounded-lg border bg-white">
-        <Link :href="`/products/${product.slug}`" class="flex h-32 items-center justify-center bg-gradient-to-br from-indigo-100 to-sky-100 text-4xl font-bold text-indigo-400">
-            {{ product.name.charAt(0) }}
+        <Link :href="`/products/${product.slug}`" class="flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-100 to-sky-100 text-4xl font-bold text-indigo-400">
+            <img v-if="product.image_url" :src="product.image_url" :alt="product.name" loading="lazy" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
+            <span v-else>{{ product.name.charAt(0) }}</span>
         </Link>
         <div class="flex flex-1 flex-col p-4">
             <Link :href="`/products/${product.slug}`" class="font-medium hover:text-indigo-600">{{ product.name }}</Link>

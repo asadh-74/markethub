@@ -55,6 +55,6 @@ class CheckoutController extends Controller
             return back()->withErrors(['checkout' => $e->getMessage()]);
         }
 
-        return redirect()->route('orders.show', $order)->with('success', 'Payment successful - thank you!');
+        return redirect()->route('orders.show', $order)->with('success', 'Demo order placed — no money was charged.');
     }
 }

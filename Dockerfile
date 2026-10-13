@@ -2,7 +2,7 @@
 FROM node:20-alpine AS assets
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci
 COPY vite.config.js ./
 COPY resources ./resources
 RUN npm run build
@@ -11,8 +11,8 @@ RUN npm run build
 FROM php:8.4-apache
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends git unzip libzip-dev \
- && docker-php-ext-install zip \
+ && apt-get install -y --no-install-recommends git unzip libzip-dev libpq-dev \
+ && docker-php-ext-install zip pdo_mysql pdo_pgsql \
  && a2enmod rewrite headers \
  && rm -rf /var/lib/apt/lists/*
 

@@ -14,7 +14,7 @@ class Product extends Model
 
     public const LOW_STOCK_THRESHOLD = 5;
 
-    protected $fillable = ['name', 'description', 'price_cents', 'stock', 'category_id', 'is_active'];
+    protected $fillable = ['name', 'description', 'price_cents', 'stock', 'category_id', 'is_active', 'image_url'];
 
     protected function casts(): array
     {
@@ -70,6 +70,7 @@ class Product extends Model
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
+            'image_url' => $this->image_url,
             'price_cents' => $this->price_cents,
             'stock' => $this->stock,
             'store' => $this->store?->name,
