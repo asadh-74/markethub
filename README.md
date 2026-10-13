@@ -1,47 +1,98 @@
-# MarketHub
+# MarketHub — Laravel Multi-Vendor Marketplace
 
-A multi-vendor marketplace built with **Laravel 12 + Vue 3 (Inertia)**.
-Customers browse and buy, vendors run their own store, admins approve stores.
+**Laravel 12 · Vue 3 · Inertia · Aiven MySQL Free · Docker · Render**
 
-## Roles
-| Role | Can do |
-|---|---|
-| Customer | Search / filter products, cart, checkout (demo payment), order history |
-| Vendor | Own store dashboard, product CRUD, ship their items, low-stock + new-order notifications |
-| Admin | Approve / suspend stores, platform stats |
+MarketHub is a full-stack e-commerce portfolio app with customer, vendor and admin accounts, real relational persistence, REST catalogue API and transactional checkout. The payment provider is **a simulator**, not an actual payment service. Never supply real card numbers or delivery details.
 
-Demo logins (password `password`): `customer@markethub.test`, `vendor1@markethub.test`, `vendor2@markethub.test`, `admin@markethub.test`.
-`vendor3@markethub.test` owns a store that is still pending approval.
+## Key features
 
-## Run it
+- Product catalogue with search, category and price filters, pagination and responsive product photo cards.
+- Vendor-owned stores, admin approval/suspension, product inventory and optional HTTPS image URLs.
+- Customer accounts, persisted carts, demo orders, inventory locking, order status and notifications.
+- Multi-vendor fulfilment, role-based middleware, policies, API throttling/caching and CI tests.
+- /health endpoint checks the database; Docker includes both pdo_mysql and pdo_pgsql.
+- Startup uses **migrate**, never **migrate:fresh**; customer and order data survives application restarts **when an external persistent database is configured**.
+
+## Local development
+
+Requires PHP 8.2+, Composer, Node.js 20+ and SQLite/MySQL/PostgreSQL.
+
 ```bash
-composer run dev        # server + queue worker + Vite (hot reload)
-php artisan test        # 35 tests
+cp .env.example .env
+composer install
+php artisan key:generate
+# For a disposable demo, set MARKETHUB_SEED_DEMO=true in .env
+php artisan migrate
+php artisan markethub:seed-categories
+php artisan markethub:seed-demo        # SQLite demo only, optional
+npm ci
+npm run build
+composer run dev
 ```
-Without `composer run dev`: `npm run build`, `php artisan serve`, `php artisan queue:work`.
 
-Demo payment card: `4242 4242 4242 4242` succeeds, `4000 0000 0000 0002` is declined.
+Run backend tests with `php artisan test`; build the frontend with `npm run build`.
 
-## What it demonstrates
-| Topic | Where |
-|---|---|
-| Atomic checkout (transaction, row locks, rollback on failed payment) | `app/Services/CheckoutService.php` |
-| Payment gateway abstraction (swap in Stripe without touching checkout) | `app/Services/Payment/*`, bound in `AppServiceProvider` |
-| Events, queued listeners, mail + database notifications | `app/Events`, `app/Listeners`, `app/Notifications` |
-| Role-based access (middleware) and ownership checks (policies) | `app/Http/Middleware/EnsureRole.php`, `app/Policies` |
-| Multi-vendor orders (per-seller fulfilment, order auto-ships when all sellers ship) | `Vendor/OrderItemController.php` |
-| Money as integer cents, price/name snapshots on order items | migrations, `OrderItem` |
-| Public REST API with resources, validation, throttling, caching | `routes/api.php`, `Api/ProductController.php` |
-| Vue 3 SPA via Inertia (no separate API needed for the UI) | `resources/js` |
-| Tests: checkout rollback, stock, authorization, filters, API | `tests/Feature` |
-| Docker + Render deploy, CI | `Dockerfile`, `render.yaml`, `.github/workflows/ci.yml` |
+## Persistent database — Aiven free MySQL (recommended)
+
+For a **$0 portfolio deployment**, use **Aiven for MySQL Free** + **Render Free Web Service**. Aiven hosts real MySQL with 1 GB storage, 1 GB RAM and backups, with no required credit card and no preset trial expiry. Aiven may power down a database after inactivity; the Render web service also spins down when idle. Use these services for a *portfolio/demo*, not a high-availability store.
+
+1. Sign up at https://console.aiven.io and create a project/service: **MySQL → Free** (not a trial/paid size). Name the MySQL service `markethub-db`. Aiven picks the free region.
+2. Wait for the new MySQL service to report **Running**. Its existing `defaultdb` is enough to deploy MarketHub—**you do not need to create another database**. You may choose to create a separate `markethub` database from **Connect → Databases** later, but match `DB_DATABASE` to whichever database you actually use.
+3. From the service **Overview → Connection information**, copy the **Host, Port, Username, Password, Database** and download **CA Certificate** as `ca.pem`. Aiven ports are service-specific; **do not assume 3306**. Keep the password and certificate private.
+4. Open your existing MarketHub **Render web service → Environment**. Add these environment variable names and set their values from Aiven; use the Render dashboard's secret values, not GitHub files. The site will remain on its current database until you update the live Render environment and deploy the GitHub feature branch.
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://markethub-b3fz.onrender.com
+APP_KEY=base64:YOUR_EXISTING_PERSISTENT_LARAVEL_KEY
+DB_CONNECTION=mysql
+DB_HOST=YOUR_AIVEN_HOST
+DB_PORT=YOUR_AIVEN_MYSQL_PORT
+DB_DATABASE=defaultdb
+DB_USERNAME=YOUR_AIVEN_MYSQL_USERNAME
+DB_PASSWORD=YOUR_PRIVATE_AIVEN_PASSWORD
+MARKETHUB_MYSQL_CA_PEM="CONTENTS_OF_AIVEN_ca.pem"
+MARKETHUB_SEED_DEMO=false
+```
+
+**Certificate**: `MARKETHUB_MYSQL_CA_PEM` must contain the actual multi-line PEM certificate from Aiven, including BEGIN/END CERTIFICATE. The Docker startup script writes it to `storage/certs/aiven-ca.pem` with owner-only permissions, sets Laravel's `MYSQL_ATTR_SSL_CA` to that path, and uses PDO's CA validation. Do not put the certificate, password, or encryption key in GitHub. You may instead configure `MYSQL_ATTR_SSL_CA` with an existing CA file path in the container.
+
+**Important**: Changing `DB_CONNECTION` to MySQL does **not** migrate existing SQLite records. If the old demo has real data, back it up/export it first. The script runs `php artisan migrate --force` on startup and never wipes tables. If the database connection is temporarily unavailable, the deployment should fail rather than silently switch back to SQLite.
+
+**Do not rotate `APP_KEY`** when switching databases if this is an existing Laravel deployment; changing it can invalidate sessions/encrypted data. If APP_KEY is missing for a *brand-new* instance, generate once using `php artisan key:generate --show`, then store that key only on Render.
+
+Aiven guides: [Create free MySQL](https://aiven.io/docs/products/mysql/get-started) · [Connect PHP via PDO and a CA](https://aiven.io/docs/products/mysql/howto/connect-with-php) · [Free tier limits](https://aiven.io/docs/products/mysql/concepts/mysql-free-tier).
+
+### Other database providers
+
+The application also supports ordinary managed MySQL/MariaDB and Supabase PostgreSQL via Laravel, but **MySQL is our intended persistent database**. If you later choose Supabase, the dedicated private-schema SQL is at `database/supabase/001_private_schema.sql` and you must set `DB_SEARCH_PATH=markethub`; this is *not* necessary for Aiven MySQL.
+
+### Secure initial admin
+
+For a fresh persistent database you will have no publicly known demo accounts. Set `MARKETHUB_ADMIN_EMAIL` and `MARKETHUB_ADMIN_PASSWORD` (12+ characters) temporarily in Render, let the app boot once to create the admin account, then **delete these two variables** from the hosting environment. Subsequent restarts do not replace an existing admin password. Alternatively run `php artisan markethub:bootstrap-admin` with the temporary environment variables.
+
+Categories are created idempotently; customer and vendor accounts are created via registration. Admins must approve new vendor stores.
+
+## Disposable reviewer demo on Render
+
+The included `render.yaml` defaults to SQLite and `MARKETHUB_SEED_DEMO=true` so reviewers can explore the site without provisioning a database. It provisions APP_KEY for new Blueprint services. The storage is **ephemeral**; customers and orders are not guaranteed to survive Render instance recreation. The demo bootstrap only seeds when the SQLite user table is empty.
+
+Reviewer-only logins (password `password`): `customer@markethub.test`, `vendor1@markethub.test`, `vendor2@markethub.test`, `admin@markethub.test`. Do not enable these sample accounts against your persistent database.
+
+## Payments and media
+
+Checkout currently uses a fake gateway and synthetic card numbers. The interface labels all payments as demo transactions. Integrate a real processor and its verification/webhooks before calling the store production-ready. Image URLs are validated on input and displayed directly; for production media management, use a dedicated object-storage service.
 
 ## API
-`GET /api/v1/products?q=&category=&min=&max=&per_page=` and `GET /api/v1/products/{slug}` (public, read-only, cached 60s).
 
-## Deploy (Render, free)
-New -> Blueprint -> pick this repo. The demo database is rebuilt on every start, and the free tier sleeps when idle.
-For real use switch `DB_CONNECTION` to MySQL/PostgreSQL, set `MAIL_MAILER` to SMTP, and replace `FakeGateway` with a real gateway.
+`GET /api/v1/products?q=&category=&min=&max=&per_page=` and `GET /api/v1/products/{slug}`.
 
-## Ideas to extend
-Image uploads (S3), Stripe, coupon codes, reviews, Redis queue/cache, Laravel Scout search.
+## Security and deployment
+
+- Never commit `.env`, credentials, API tokens, real customer data or card numbers.
+- Keep `APP_DEBUG=false` and `APP_KEY` stable in production.
+- **MySQL setup does not need Supabase or any SQL bootstrap script**: Laravel creates its tables automatically with `php artisan migrate --force`. The private-schema script is **only** for optional Supabase PostgreSQL deployments.
+- Confirm the live Render service uses its intended persistent database **before merging/deploying this upgrade**. Back up existing data.
+- Startups do not delete database tables; schema changes are regular migrations.
+- The queue worker runs alongside the web service for portfolio demonstrations; move it to its own worker for higher availability.

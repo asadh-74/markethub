@@ -63,6 +63,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'description' => $product->description,
+                'image_url' => $product->image_url,
                 'price' => $product->price_cents / 100,
                 'stock' => $product->stock,
                 'category_id' => $product->category_id,
@@ -105,6 +106,7 @@ class ProductController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'image_url' => ['nullable', 'url:http,https', 'max:2048'],
             'price' => ['required', 'numeric', 'min:0.01', 'max:10000000'],
             'stock' => ['required', 'integer', 'min:0', 'max:100000'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],

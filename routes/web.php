@@ -10,6 +10,17 @@ use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController
 use App\Http\Controllers\Vendor\OrderItemController;
 use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+
+Route::get('/health', function () {
+    try {
+        DB::connection()->select('SELECT 1');
+        return response()->json(['status' => 'ok']);
+    } catch (\Throwable $e) {
+        report($e);
+        return response()->json(['status' => 'unavailable'], 503);
+    }
+})->name('health');
 
 Route::redirect('/', '/shop');
 

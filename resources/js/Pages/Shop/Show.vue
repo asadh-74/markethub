@@ -28,8 +28,9 @@ const add = () => {
         <Link href="/shop" class="text-sm text-indigo-600">&larr; Back to shop</Link>
 
         <div class="mt-4 grid gap-8 md:grid-cols-2">
-            <div class="flex h-72 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-100 to-sky-100 text-7xl font-bold text-indigo-400">
-                {{ product.name.charAt(0) }}
+            <div class="flex h-80 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-sky-100 text-7xl font-bold text-indigo-400">
+                <img v-if="product.image_url" :src="product.image_url" :alt="product.name" class="h-full w-full object-contain" />
+                <span v-else>{{ product.name.charAt(0) }}</span>
             </div>
             <div>
                 <h1 class="text-2xl font-semibold">{{ product.name }}</h1>

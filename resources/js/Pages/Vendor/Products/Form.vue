@@ -10,6 +10,7 @@ const props = defineProps({
 const form = useForm({
     name: props.product?.name ?? '',
     description: props.product?.description ?? '',
+    image_url: props.product?.image_url ?? '',
     price: props.product?.price ?? '',
     stock: props.product?.stock ?? 0,
     category_id: props.product?.category_id ?? '',
@@ -42,6 +43,13 @@ const submit = () => {
                 <label class="mb-1 block text-sm">Description</label>
                 <textarea v-model="form.description" rows="4" class="w-full rounded border px-3 py-2" />
                 <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</p>
+            </div>
+            <div>
+                <label class="mb-1 block text-sm">Product image URL (https://)</label>
+                <input v-model="form.image_url" type="url" placeholder="https://images.example.com/product.jpg" class="w-full rounded border px-3 py-2" />
+                <p class="mt-1 text-xs text-slate-500">Use a public HTTPS product photo. Image hosting stays independent of Render's ephemeral disk.</p>
+                <p v-if="form.errors.image_url" class="mt-1 text-sm text-red-600">{{ form.errors.image_url }}</p>
+                <img v-if="form.image_url && /^https?:\/\//.test(form.image_url)" :src="form.image_url" alt="Product preview" class="mt-3 h-32 w-48 rounded-lg border object-cover" />
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
