@@ -37,9 +37,9 @@ Run backend tests with `php artisan test`; build the frontend with `npm run buil
 For a **$0 portfolio deployment**, use **Aiven for MySQL Free** + **Render Free Web Service**. Aiven hosts real MySQL with 1 GB storage, 1 GB RAM and backups, with no required credit card and no preset trial expiry. Aiven may power down a database after inactivity; the Render web service also spins down when idle. Use these services for a *portfolio/demo*, not a high-availability store.
 
 1. Sign up at https://console.aiven.io and create a project/service: **MySQL → Free** (not a trial/paid size). Name the MySQL service `markethub-db`. Aiven picks the free region.
-2. From the MySQL service's **Connect → Databases** section, create a database called `markethub` (or use the provided `defaultdb`).
+2. Wait for the new MySQL service to report **Running**. Its existing `defaultdb` is enough to deploy MarketHub—**you do not need to create another database**. You may choose to create a separate `markethub` database from **Connect → Databases** later, but match `DB_DATABASE` to whichever database you actually use.
 3. From the service **Overview → Connection information**, copy the **Host, Port, Username, Password, Database** and download **CA Certificate** as `ca.pem`. Aiven ports are service-specific; **do not assume 3306**. Keep the password and certificate private.
-4. Open your existing MarketHub **Render web service → Environment**. Add these environment variable names and set their values from Aiven; use the Render dashboard's secret values, not GitHub files.
+4. Open your existing MarketHub **Render web service → Environment**. Add these environment variable names and set their values from Aiven; use the Render dashboard's secret values, not GitHub files. The site will remain on its current database until you update the live Render environment and deploy the GitHub feature branch.
 
 ```dotenv
 APP_ENV=production
@@ -49,7 +49,7 @@ APP_KEY=base64:YOUR_EXISTING_PERSISTENT_LARAVEL_KEY
 DB_CONNECTION=mysql
 DB_HOST=YOUR_AIVEN_HOST
 DB_PORT=YOUR_AIVEN_MYSQL_PORT
-DB_DATABASE=markethub
+DB_DATABASE=defaultdb
 DB_USERNAME=YOUR_AIVEN_MYSQL_USERNAME
 DB_PASSWORD=YOUR_PRIVATE_AIVEN_PASSWORD
 MARKETHUB_MYSQL_CA_PEM="CONTENTS_OF_AIVEN_ca.pem"
@@ -92,7 +92,7 @@ Checkout currently uses a fake gateway and synthetic card numbers. The interface
 
 - Never commit `.env`, credentials, API tokens, real customer data or card numbers.
 - Keep `APP_DEBUG=false` and `APP_KEY` stable in production.
-- Run `database/supabase/001_private_schema.sql` before applying Laravel migrations. Do not expose the `markethub` schema in Supabase's Data API settings. Avoid using Supabase anonymous/frontend keys; the app uses only server-side PDO.
+- **MySQL setup does not need Supabase or any SQL bootstrap script**: Laravel creates its tables automatically with `php artisan migrate --force`. The private-schema script is **only** for optional Supabase PostgreSQL deployments.
 - Confirm the live Render service uses its intended persistent database **before merging/deploying this upgrade**. Back up existing data.
 - Startups do not delete database tables; schema changes are regular migrations.
 - The queue worker runs alongside the web service for portfolio demonstrations; move it to its own worker for higher availability.
