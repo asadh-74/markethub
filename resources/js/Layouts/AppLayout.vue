@@ -13,15 +13,15 @@ const logout = () => router.post('/logout');
 <template>
     <div class="min-h-screen">
         <nav class="border-b bg-white">
-            <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-                <div class="flex items-center gap-6">
+            <div class="mx-auto flex min-h-14 max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <Link href="/shop" class="text-lg font-bold text-indigo-600">🛍️ MarketHub</Link>
                     <Link href="/shop" class="text-sm hover:text-indigo-600">Shop</Link>
                     <Link v-if="user" href="/orders" class="text-sm hover:text-indigo-600">My orders</Link>
                     <Link v-if="user?.role === 'vendor'" href="/vendor" class="text-sm hover:text-indigo-600">Vendor</Link>
                     <Link v-if="user?.role === 'admin'" href="/admin" class="text-sm hover:text-indigo-600">Admin</Link>
                 </div>
-                <div class="flex items-center gap-4 text-sm">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                     <Link v-if="user" href="/cart" class="relative hover:text-indigo-600">
                         Cart
                         <span
