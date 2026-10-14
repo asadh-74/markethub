@@ -1,8 +1,51 @@
 # MarketHub — Laravel Multi-Vendor Marketplace
 
-**Laravel 12 · Vue 3 · Inertia · Aiven MySQL Free · Docker · Render**
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Render-46a2f1?style=for-the-badge)](https://markethub-b3fz.onrender.com/shop)
+[![Backend](https://img.shields.io/badge/Backend-Laravel_12-ff2d20?style=for-the-badge)](https://laravel.com/)
+[![Database](https://img.shields.io/badge/Database-Aiven_MySQL_8.4-4479a1?style=for-the-badge)](https://aiven.io/mysql)
+[![Frontend](https://img.shields.io/badge/Frontend-Vue_3-42b883?style=for-the-badge)](https://vuejs.org/)
 
-MarketHub is a full-stack e-commerce portfolio app with customer, vendor and admin accounts, real relational persistence, REST catalogue API and transactional checkout. The payment provider is **a simulator**, not an actual payment service. Never supply real card numbers or delivery details.
+**Laravel 12 · Vue 3 · Inertia.js · Managed MySQL (Aiven) · Docker · Render**
+
+## 🌐 Live application
+
+**[▶ Open the MarketHub storefront](https://markethub-b3fz.onrender.com/shop)**
+
+| Area | Link | Purpose |
+| --- | --- | --- |
+| 🛍️ Storefront | [Browse products](https://markethub-b3fz.onrender.com/shop) | Product catalogue, search, filters and product details |
+| 🛒 Shopping cart | [View cart](https://markethub-b3fz.onrender.com/cart) | Logged-in customer cart |
+| 👤 Customer accounts | [Log in](https://markethub-b3fz.onrender.com/login) · [Register](https://markethub-b3fz.onrender.com/register) | Customer and vendor sign-in |
+| 📦 Orders | [Order history](https://markethub-b3fz.onrender.com/orders) | Authenticated customer's previous demo orders |
+| 🧰 Admin dashboard | [Admin overview](https://markethub-b3fz.onrender.com/admin) | Admin-only vendor approval, inventory and order management |
+| 📊 Inventory | [Admin products](https://markethub-b3fz.onrender.com/admin/products) | Admin-only stock control and listing visibility |
+| 🧾 Fulfilment | [Admin orders](https://markethub-b3fz.onrender.com/admin/orders) | Admin-only order review and shipment updates |
+| ❤️ Health endpoint | [Application health](https://markethub-b3fz.onrender.com/health) | Checks database connectivity |
+
+> **Portfolio demo:** checkout uses simulated payment processing; no real payment is charged. Login is required for carts, orders and dashboards. Public registration cannot create an administrator.
+
+## 🗄️ Database and hosting
+
+**Backend:** Laravel/PHP runs as a Docker web service on Render. **Database:** Aiven for MySQL 8.4 (managed relational database; free-tier configuration). The backend uses Laravel Eloquent and migrations with a private TLS-secured MySQL connection.
+
+```text
+Browser (Vue 3 + Inertia.js)
+          |
+          v
+Render (Laravel 12 + PHP + Apache)
+          |
+          | PDO MySQL + TLS / Aiven CA
+          v
+Aiven MySQL 8.4 (private managed database)
+          |
+          +-- users / stores / categories / products
+          +-- cart_items / orders / order_items
+          +-- sessions / jobs / cache / notifications
+```
+
+**No downloadable `.db` file is checked into this repository.** MySQL on Aiven is a managed server database, not a local SQLite `.db` file. Access to the live Aiven console, server address, username, password and CA certificate is intentionally kept private; hosting secrets live in Render environment settings, **never in GitHub**. [Learn about Aiven MySQL](https://aiven.io/mysql).
+
+MarketHub is a full-stack e-commerce portfolio app with customer, vendor and admin accounts, real relational persistence, REST catalogue API and transactional demo checkout. The payment provider is **a simulator**, not an actual payment service. Never supply real card numbers or delivery details.
 
 ## Key features
 
@@ -39,7 +82,7 @@ For a **$0 portfolio deployment**, use **Aiven for MySQL Free** + **Render Free 
 1. Sign up at https://console.aiven.io and create a project/service: **MySQL → Free** (not a trial/paid size). Name the MySQL service `markethub-db`. Aiven picks the free region.
 2. Wait for the new MySQL service to report **Running**. Its existing `defaultdb` is enough to deploy MarketHub—**you do not need to create another database**. You may choose to create a separate `markethub` database from **Connect → Databases** later, but match `DB_DATABASE` to whichever database you actually use.
 3. From the service **Overview → Connection information**, copy the **Host, Port, Username, Password, Database** and download **CA Certificate** as `ca.pem`. Aiven ports are service-specific; **do not assume 3306**. Keep the password and certificate private.
-4. Open your existing MarketHub **Render web service → Environment**. Add these environment variable names and set their values from Aiven; use the Render dashboard's secret values, not GitHub files. The site will remain on its current database until you update the live Render environment and deploy the GitHub feature branch.
+4. Open your existing MarketHub **Render web service → Environment**. Add these environment variable names and set their values from Aiven; use the Render dashboard's secret values, not GitHub files. This repository's `main` branch already includes the MySQL-compatible Docker startup script; configure the database credentials privately in Render, then use the regular deploy workflow.
 
 ```dotenv
 APP_ENV=production
@@ -86,7 +129,7 @@ Categories are created idempotently; customer and vendor accounts are created vi
 
 For a disposable reviewer demo, configure `DB_CONNECTION=sqlite` and `MARKETHUB_SEED_DEMO=true` in Render's Environment. The Blueprint intentionally **does not** set those variables: it must not override the live persistent MySQL configuration. It provisions APP_KEY for new Blueprint services. The storage is **ephemeral**; customers and orders are not guaranteed to survive Render instance recreation. The demo bootstrap only seeds when the SQLite user table is empty.
 
-Reviewer-only logins (password `password`): `customer@markethub.test`, `vendor1@markethub.test`, `vendor2@markethub.test`, `admin@markethub.test`. Do not enable these sample accounts against your persistent database.
+The disposable local SQLite demo seeder creates test-only accounts. **Never enable these seeded accounts against the live Aiven database**, and do not use real customer or payment details in any demo.
 
 ## Payments and media
 
@@ -101,6 +144,6 @@ Checkout currently uses a fake gateway and synthetic card numbers. The interface
 - Never commit `.env`, credentials, API tokens, real customer data or card numbers.
 - Keep `APP_DEBUG=false` and `APP_KEY` stable in production.
 - **MySQL setup does not need Supabase or any SQL bootstrap script**: Laravel creates its tables automatically with `php artisan migrate --force`. The private-schema script is **only** for optional Supabase PostgreSQL deployments.
-- Confirm the live Render service uses its intended persistent database **before merging/deploying this upgrade**. Back up existing data.
+- Before changing database hosts, back up existing records and confirm the Render service points at the intended persistent database. A successful `/health` check verifies the configured database responds, but does not by itself prove which provider is in use.
 - Startups do not delete database tables; schema changes are regular migrations.
 - The queue worker runs alongside the web service for portfolio demonstrations; move it to its own worker for higher availability.
