@@ -57,6 +57,14 @@ To opt out of automatic initial sample-product creation, set `MARKETHUB_SEED_CAT
 
 > Product photos are illustrative external Unsplash images. This is a portfolio demo, not a real payment-enabled business.
 
+## Admin analytics dashboard
+
+The [role-protected dashboard](https://markethub-b3fz.onrender.com/admin) includes two real-data charts:
+- **Simulated sales trend** (PKR, line/area) and **completed demo order volume** (bar chart), with 7 / 30 / 90-day selectors.
+- **Stock by category** (shared active inventory from approved stores), a low-stock watchlist, counts of users, orders, pending vendors and listings, and an admin-only refresh button.
+
+All charts aggregate **actual stored Laravel orders and products** from the configured persistent database (Aiven MySQL in production). Empty periods display zero-activity states, never fabricated transactions. *Revenue is simulated:* only demo orders with paid/shipped statuses count towards demo sales, not pending orders. The feature runs on SQLite and MySQL in CI and does not require charting SaaS, paid API keys or new JavaScript dependencies. No changes to existing data or migrations are required.
+
 ## Key features
 
 - Product catalogue with search, category and price filters, pagination and responsive product photo cards.
