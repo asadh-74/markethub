@@ -2,6 +2,7 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '../../Layouts/AppLayout.vue';
 
+defineProps({ showDemoAccounts: { type: Boolean, default: false } });
 const form = useForm({ email: '', password: '', remember: false });
 const submit = () => form.post('/login', { onFinish: () => form.reset('password') });
 const fill = (email) => {
@@ -27,7 +28,7 @@ const fill = (email) => {
             <p class="mt-4 text-sm text-slate-500">
                 No account? <Link href="/register" class="text-indigo-600">Register</Link>
             </p>
-            <div class="mt-4 border-t pt-3 text-xs text-slate-500">
+            <div v-if="showDemoAccounts" class="mt-4 border-t pt-3 text-xs text-slate-500">
                 <p class="mb-1 font-medium">Demo accounts (password: password)</p>
                 <div class="flex flex-wrap gap-2">
                     <button type="button" class="rounded border px-2 py-1 hover:bg-slate-100" @click="fill('customer@markethub.test')">Customer</button>

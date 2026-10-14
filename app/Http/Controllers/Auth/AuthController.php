@@ -19,7 +19,12 @@ class AuthController extends Controller
 {
     public function showLogin(): Response
     {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', [
+            // Public production MySQL users have their own private passwords.
+            // The legacy shared demo accounts exist only in a local SQLite demo.
+            'showDemoAccounts' => app()->environment('local')
+                && config('database.default') === 'sqlite',
+        ]);
     }
 
     public function login(Request $request): RedirectResponse
