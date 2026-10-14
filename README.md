@@ -111,6 +111,15 @@ Aiven guides: [Create free MySQL](https://aiven.io/docs/products/mysql/get-start
 
 The application also supports ordinary managed MySQL/MariaDB and Supabase PostgreSQL via Laravel, but **MySQL is our intended persistent database**. If you later choose Supabase, the dedicated private-schema SQL is at `database/supabase/001_private_schema.sql` and you must set `DB_SEARCH_PATH=markethub`; this is *not* necessary for Aiven MySQL.
 
+## Account and administrator management
+
+- **Customers and vendors** register themselves through the [public registration page](https://markethub-b3fz.onrender.com/register), set their own private passwords and log in at [MarketHub login](https://markethub-b3fz.onrender.com/login).
+- **Existing admins** can use the [Admin Users panel](https://markethub-b3fz.onrender.com/admin/users) to search users, view account roles and grant/revoke admin privileges for ordinary customers. Re-entering the existing admin's password is required for role changes. An admin cannot revoke their own access; vendor identities cannot be reassigned because they own stores and fulfillment records.
+- **First admin without Render credentials:** The service owner can create their own customer account through registration, then use a privileged database client (DBeaver connected to Aiven MySQL) to promote only that verified account to the first administrator. Do not run a bulk role update; never allow public signup to choose `admin`.
+- **One-time alternative:** The `markethub:bootstrap-admin` command is still available via temporary Render environment variables, but ordinary user accounts and passwords are never managed through deployment settings.
+
+For security, a newly created marketplace has no built-in public admin credentials. Existing users and orders are unaffected by installing this admin user-management page.
+
 ### Secure initial admin
 
 **The admin dashboard cannot be accessed by creating a regular customer or vendor account.** Use a *new, unused email address* for the first admin (the command refuses to promote an existing customer automatically).
