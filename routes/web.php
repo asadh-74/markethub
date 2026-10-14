@@ -62,4 +62,9 @@ Route::middleware(['auth', 'role:vendor'])->prefix('vendor')->name('vendor.')->g
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::patch('/stores/{store}', [AdminDashboardController::class, 'updateStore'])->name('stores.update');
+    // Admin-only inventory, order review and shipment operations.
+    Route::get('/products', [\App\Http\Controllers\Admin\ProductController::class, 'index'])->name('products.index');
+    Route::patch('/products/{product}', [\App\Http\Controllers\Admin\ProductController::class, 'update'])->name('products.update');
+    Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+    Route::patch('/order-items/{item}/ship', [\App\Http\Controllers\Admin\OrderItemController::class, 'ship'])->name('items.ship');
 });
