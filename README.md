@@ -84,7 +84,7 @@ Categories are created idempotently; customer and vendor accounts are created vi
 
 ## Disposable reviewer demo on Render
 
-The included `render.yaml` defaults to SQLite and `MARKETHUB_SEED_DEMO=true` so reviewers can explore the site without provisioning a database. It provisions APP_KEY for new Blueprint services. The storage is **ephemeral**; customers and orders are not guaranteed to survive Render instance recreation. The demo bootstrap only seeds when the SQLite user table is empty.
+For a disposable reviewer demo, configure `DB_CONNECTION=sqlite` and `MARKETHUB_SEED_DEMO=true` in Render's Environment. The Blueprint intentionally **does not** set those variables: it must not override the live persistent MySQL configuration. It provisions APP_KEY for new Blueprint services. The storage is **ephemeral**; customers and orders are not guaranteed to survive Render instance recreation. The demo bootstrap only seeds when the SQLite user table is empty.
 
 Reviewer-only logins (password `password`): `customer@markethub.test`, `vendor1@markethub.test`, `vendor2@markethub.test`, `admin@markethub.test`. Do not enable these sample accounts against your persistent database.
 
