@@ -25,6 +25,8 @@ class OrderController extends Controller
                     'customer_email' => $order->user?->email,
                     'shipping_name' => $order->shipping_name,
                     'shipping_city' => $order->shipping_city,
+                    'shipping_address' => $order->shipping_address,
+                    'shipping_phone' => $order->shipping_phone,
                     'created_at' => $order->created_at?->format('Y-m-d H:i'),
                     'total_cents' => $order->total_cents,
                     'items' => $order->items->map(fn ($item) => [
