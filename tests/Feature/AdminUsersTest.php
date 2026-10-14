@@ -38,7 +38,7 @@ class AdminUsersTest extends MarketplaceTestCase
         ])->assertSessionHasNoErrors();
 
         $this->assertSame(UserRole::Admin, $customer->fresh()->role);
-        $this->actingAs($customer)->get('/admin/users')->assertOk();
+        $this->actingAs($customer->fresh())->get('/admin/users')->assertOk();
     }
 
     public function test_wrong_password_cannot_grant_admin_access(): void
@@ -73,7 +73,7 @@ class AdminUsersTest extends MarketplaceTestCase
         ])->assertSessionHasNoErrors();
 
         $this->assertSame(UserRole::Customer, $secondAdmin->fresh()->role);
-        $this->actingAs($secondAdmin)->get('/admin/users')->assertForbidden();
+        $this->actingAs($secondAdmin->fresh())->get('/admin/users')->assertForbidden();
     }
 
     public function test_vendor_roles_cannot_be_changed(): void
