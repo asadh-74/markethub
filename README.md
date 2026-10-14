@@ -47,6 +47,16 @@ Aiven MySQL 8.4 (private managed database)
 
 MarketHub is a full-stack e-commerce portfolio app with customer, vendor and admin accounts, real relational persistence, REST catalogue API and transactional demo checkout. The payment provider is **a simulator**, not an actual payment service. Never supply real card numbers or delivery details.
 
+## Shared product catalogue (all users)
+
+MarketHub products belong to the **marketplace**, not to individual customer accounts. Every visitor and every newly registered customer sees the same active listings from approved vendors at [the storefront](https://markethub-b3fz.onrender.com/shop). A customer account is only needed for cart, checkout and order history.
+
+On the **first startup with an empty MySQL product catalogue**, the application runs `php artisan markethub:seed-shared-catalog` and adds **10 sample items** across electronics, fashion, home, books and sports, owned by a fictional approved `MarketHub Demo Store`. This system-owned vendor receives a cryptographically random, undisclosed password; **no shared public vendor/admin credentials** are created. The catalogue seed does **not** run when listings exist and does **not** delete, replace, or reset registered customers, orders or inventory. It will not recreate deleted products once the system demo store exists.
+
+To opt out of automatic initial sample-product creation, set `MARKETHUB_SEED_CATALOG=false` in Render. The existing `MARKETHUB_SEED_DEMO=false` remains unchanged. New real vendors may register, get store approval from an admin, and publish their own products; their approved, active listings are then shared with all customers. Stock remains shared and decreases on successful **simulated** checkout.
+
+> Product photos are illustrative external Unsplash images. This is a portfolio demo, not a real payment-enabled business.
+
 ## Key features
 
 - Product catalogue with search, category and price filters, pagination and responsive product photo cards.

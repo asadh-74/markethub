@@ -53,6 +53,13 @@ if [ "${MARKETHUB_SEED_DEMO:-false}" = "true" ]; then
 fi
 php artisan markethub:seed-categories --no-interaction
 
+# A freshly initialized MySQL marketplace has no products. Bootstrap a
+# shared, public sample catalogue once, without creating known demo passwords.
+# This skips existing products and never resets customer/order data.
+if [ "${DB_CONNECTION:-sqlite}" = "mysql" ] && [ "${MARKETHUB_SEED_CATALOG:-true}" = "true" ]; then
+  php artisan markethub:seed-shared-catalog --no-interaction
+fi
+
 if [ -n "${MARKETHUB_ADMIN_EMAIL:-}" ] || [ -n "${MARKETHUB_ADMIN_PASSWORD:-}" ]; then
   php artisan markethub:bootstrap-admin --no-interaction
 fi
