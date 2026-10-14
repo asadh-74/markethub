@@ -22,6 +22,7 @@ const setStatus = (store, status) =>
                 <p class="mt-2 text-sm text-slate-500">Manage vendors, inventory and orders from one secure workspace. <span class="ml-1 rounded bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">Laravel + {{ stats.database_driver === 'mysql' ? 'MySQL' : stats.database_driver === 'pgsql' ? 'PostgreSQL' : 'SQLite demo' }}</span></p>
             </div>
             <div class="flex flex-wrap gap-2">
+                <Link href="/admin/users" class="rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50">Manage users</Link>
                 <Link href="/admin/products" class="rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50">Manage products</Link>
                 <Link href="/admin/orders" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Manage orders</Link>
             </div>
