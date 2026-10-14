@@ -22,6 +22,7 @@ class DashboardController extends Controller
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
                 'users' => User::count(),
+                'database_driver' => config('database.default'),
                 'products' => Product::count(),
                 'pending_stores' => Store::where('status', StoreStatus::Pending->value)->count(),
                 'pending_items' => OrderItem::where('fulfillment_status', 'pending')->count(),

@@ -19,7 +19,7 @@ const setStatus = (store, status) =>
             <div>
                 <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600">MarketHub / Administration</p>
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Marketplace overview</h1>
-                <p class="mt-2 text-sm text-slate-500">Manage vendors, inventory and orders from one secure workspace.</p>
+                <p class="mt-2 text-sm text-slate-500">Manage vendors, inventory and orders from one secure workspace. <span class="ml-1 rounded bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">Laravel + {{ stats.database_driver === 'mysql' ? 'MySQL' : stats.database_driver === 'pgsql' ? 'PostgreSQL' : 'SQLite demo' }}</span></p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <Link href="/admin/products" class="rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50">Manage products</Link>

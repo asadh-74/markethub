@@ -70,7 +70,15 @@ The application also supports ordinary managed MySQL/MariaDB and Supabase Postgr
 
 ### Secure initial admin
 
-For a fresh persistent database you will have no publicly known demo accounts. Set `MARKETHUB_ADMIN_EMAIL` and `MARKETHUB_ADMIN_PASSWORD` (12+ characters) temporarily in Render, let the app boot once to create the admin account, then **delete these two variables** from the hosting environment. Subsequent restarts do not replace an existing admin password. Alternatively run `php artisan markethub:bootstrap-admin` with the temporary environment variables.
+**The admin dashboard cannot be accessed by creating a regular customer or vendor account.** Use a *new, unused email address* for the first admin (the command refuses to promote an existing customer automatically).
+
+1. Open **Render → MarketHub → Environment**. Set `MARKETHUB_ADMIN_EMAIL` to your intended admin email and `MARKETHUB_ADMIN_PASSWORD` to a randomly generated password (12+ characters). **Enter them only in Render, not in GitHub or this chat.**
+2. Click **Save, deploy**. Wait for the new deploy to become **Live**, then check the deployment logs for `Initial administrator created` or `Administrator already exists`.
+3. In Render, **delete both** temporary `MARKETHUB_ADMIN_*` entries and save/deploy again. **Do not delete `APP_KEY` or your existing `DB_*` / TLS settings.**
+4. Visit **https://markethub-b3fz.onrender.com/login**, sign in with the newly created admin account and open **https://markethub-b3fz.onrender.com/admin**.
+
+Only the admin can approve/suspend vendors; review all orders, mark paid-demo order items as shipped; and review, show/hide and restock every vendor's products. New vendor accounts remain unapproved until the admin approves the store. Payments are simulations.
+
 
 Categories are created idempotently; customer and vendor accounts are created via registration. Admins must approve new vendor stores.
 
