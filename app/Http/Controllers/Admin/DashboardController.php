@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Enums\StoreStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
@@ -9,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\AdminAnalyticsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,8 +19,13 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request, AdminAnalyticsService $analytics): Response
     {
+        $data = $request->validate([
+            'period' => ['nullable', 'integer', Rule::in([7, 30, 90])],
+        ]);
+        $period = (int) ($data['period'] ?? 30);
+        $overview = $analytics->dashboard($period);
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
                 'users' => User::count(),
@@ -28,8 +35,9 @@ class DashboardController extends Controller
                 'pending_items' => OrderItem::where('fulfillment_status', 'pending')->count(),
                 'low_stock' => Product::where('stock', '<=', Product::LOW_STOCK_THRESHOLD)->count(),
                 'orders' => Order::count(),
-                'sales_cents' => (int) Order::sum('total_cents'),
+                'sales_cents' => (int) Order::whereIn('status', [OrderStatus::Paid->value, OrderStatus::Shipped->value])->sum('total_cents'),
             ],
+            'analytics' => $overview,
             'recent_orders' => Order::with('user:id,name')->latest('id')->limit(5)->get()
                 ->map(fn (Order $order) => [
                     'number' => $order->number,
