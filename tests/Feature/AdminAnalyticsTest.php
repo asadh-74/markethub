@@ -32,7 +32,8 @@ class AdminAnalyticsTest extends MarketplaceTestCase
                 ->where('analytics.period_orders', 0)
                 ->where('analytics.period_sales_cents', 0)
                 ->where('analytics.visible_products', 1)
-                ->where('analytics.stock_units', 0)
+                ->where('analytics.stock_units', 12)
+                ->where('analytics.inventory.0.name', 'Uncategorized')
                 ->where('stats.orders', 0)
                 ->where('stats.sales_cents', 0)
                 ->etc());

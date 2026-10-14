@@ -57,6 +57,18 @@ class AdminAnalyticsService
             ])
             ->values();
 
+        // Include approved, active products that have no category assigned.
+        $uncategorized = Product::listed()->whereNull('category_id')
+            ->selectRaw('COUNT(*) as product_count, COALESCE(SUM(stock), 0) as stock_units')
+            ->first();
+        if ($uncategorized && (int) $uncategorized->product_count > 0) {
+            $inventory->push([
+                'name' => 'Uncategorized',
+                'product_count' => (int) $uncategorized->product_count,
+                'stock_units' => (int) $uncategorized->stock_units,
+            ]);
+        }
+
         $lowStock = Product::listed()
             ->where('stock', '<=', Product::LOW_STOCK_THRESHOLD)
             ->with('store:id,name')
